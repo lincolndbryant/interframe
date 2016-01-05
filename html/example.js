@@ -1,1 +1,1 @@
-var messenger = new Interframe();
+var messenger = new Interframe(document.getElementsByTagName('iframe')[0].contentWindow);

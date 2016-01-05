@@ -1,0 +1,1 @@
+var messenger = new Interframe(window.top)

@@ -1,19 +1,18 @@
-'use es6';
-
-let $ = 'jQuery';
+import EventEmitter from 'wolfy87-eventemitter'
 
 export default class Messenger {
 
-  constructor(remoteDomain, remoteWindow, json, promiseAdaptor) {
+  constructor(remoteDomain, remoteWindow, promiseAdaptor) {
     this.remoteDomain = remoteDomain;
-    this.window = remoteWindow;
-    this.json = json != null ? json : true;
+    this.remoteWindow = remoteWindow;
+    this.json = true;
     this.adaptor = promiseAdaptor;
     this.onMessage = this.onMessage.bind(this);
     this.callbacks = {};
     this.deferreds = {};
     this.queue = [];
     this.idIncrement = 0;
+    this.ee = new EventEmitter();
     window.addEventListener('message', this.onMessage, false);
   }
 
@@ -45,7 +44,7 @@ export default class Messenger {
     serialized = this.json ? JSON.stringify(message) : message;
     this.log('Posting message to ' + this.remoteDomain);
     this.log(message);
-    return this.window.postMessage(serialized, this.remoteDomain);
+    return this.remoteWindow.postMessage(serialized, this.remoteDomain);
   }
 
   onMessage(e) {
@@ -105,5 +104,3 @@ export default class Messenger {
     }
   }
 }
-
-window.Interframe = Messenger;
