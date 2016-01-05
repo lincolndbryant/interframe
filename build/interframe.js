@@ -97,7 +97,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    this.remoteWindow = remoteWindow;
 	    this.options = (0, _objectAssign2.default)({}, _options2.default, options);
-	    this.adaptor = _native2.default;
+	    this.promiseAdaptor = _native2.default;
 	
 	    this.callbacks = {};
 	    this.deferreds = {};
@@ -114,7 +114,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  _createClass(Messenger, [{
 	    key: 'postMessage',
 	    value: function postMessage(message, callback) {
-	      var deferred = this.adaptor.defer();
+	      var deferred = this.promiseAdaptor.defer();
 	      if (message.response && message._callbackId) {
 	        message.response._end = +new Date();
 	        message.response._start = message._start;

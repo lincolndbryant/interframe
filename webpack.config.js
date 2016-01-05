@@ -24,10 +24,7 @@ module.exports = {
     loaders: [
       {
         test: /\.js$/, loader: 'babel', exclude: /node_modules/,
-      },
-      //{test: /\.css$/, loader: 'style!css'},
-      //{test: /\.styl$/, loader: 'style!css!stylus'}
+      }
     ]
-  },
-  plugins: []
+  }
 };

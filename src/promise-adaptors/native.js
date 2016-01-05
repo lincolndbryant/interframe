@@ -1,4 +1,6 @@
-export default {
+import { register } from '.'
+
+register('native', {
 
   isSupported: () => {
     return typeof window.Promise === 'function'
@@ -13,4 +15,4 @@ export default {
     deferred.promise = promise;
     return deferred;
   }
-}
+});

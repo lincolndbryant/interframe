@@ -1,14 +1,15 @@
 import EventEmitter from 'wolfy87-eventemitter'
 import assign from 'object-assign'
 import DEFAULTS from './options'
-import promiseAdaptor from './promise-adaptors/native'
+import nativePromiseAdaptor from './promise-adaptors/native'
+import {getAdaptors} from './promise-adaptors'
 
 export default class Messenger {
 
   constructor(remoteWindow, options={}) {
     this.remoteWindow = remoteWindow;
     this.options = assign({}, DEFAULTS, options);
-    this.adaptor = promiseAdaptor;
+    this.promiseAdaptor = getAdaptors()[this.options.promiseAdaptor];
 
     this.callbacks = {};
     this.deferreds = {};
@@ -23,7 +24,10 @@ export default class Messenger {
   }
 
   postMessage(message, callback) {
-    let deferred = this.adaptor.defer();
+    let deferred;
+    if (this.promiseAdaptor) {
+      deferred = this.promiseAdaptor.defer();
+    }
     if (message.response && message._callbackId) {
       message.response._end = +new Date();
       message.response._start = message._start;
@@ -31,9 +35,11 @@ export default class Messenger {
       message._start = +new Date();
       this.idIncrement++;
       message._callbackId = this.idIncrement;
-      this.deferreds[message._callbackId] = deferred;
       if (typeof callback == 'function') {
         this.callbacks[message._callbackId] = callback;
+      }
+      if (deferred) {
+        this.deferreds[message._callbackId] = deferred;
       }
     }
     if (this.loading) {
@@ -41,7 +47,7 @@ export default class Messenger {
     } else {
       this._send(message);
     }
-    return typeof deferred == 'function' ? deferred.promise() : deferred.promise
+    return typeof deferred.promise == 'function' ? deferred.promise() : deferred.promise
   }
 
   _send(message) {
@@ -84,9 +90,11 @@ export default class Messenger {
   }
 
   log(...message) {
-    if ((typeof localStorage !== "undefined" && localStorage !== null ? localStorage.getItem('INTERFRAME_DEBUG') : void 0) && (window.console != null) && (window.console.log != null)) {
-      return console.log(...message);
-    }
+    try {
+      if (window.localStorage && localStorage.getItem('INTERFRAME_DEBUG')) {
+        return console.log(...message);
+      }
+    } catch (e) { }
   }
 
   setLoading(loading) {
