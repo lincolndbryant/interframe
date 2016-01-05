@@ -8,7 +8,7 @@
       action: 'hello',
       data: 'important stuff'
     }).then(function (message) {
-      console.log(message)
+      console.log('received reply from inner frame', message);
     })
   }
 })();

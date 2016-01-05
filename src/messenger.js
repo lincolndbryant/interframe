@@ -13,10 +13,10 @@ export default class Messenger {
     this.deferreds = {};
     this.queue = [];
     this.idIncrement = 0;
+
     this.ee = new EventEmitter();
     this.on = this.ee.on.bind(this.ee);
     this.off = this.ee.off.bind(this.ee);
-
     window.addEventListener('message', this.onMessage, false);
   }
 
