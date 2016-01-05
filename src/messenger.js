@@ -1,8 +1,9 @@
 import EventEmitter from 'wolfy87-eventemitter'
+import promiseAdaptor from './promise-adaptors/native.js'
 
 export default class Messenger {
 
-  constructor(remoteDomain, remoteWindow, promiseAdaptor) {
+  constructor(remoteDomain, remoteWindow) {
     this.remoteDomain = remoteDomain;
     this.remoteWindow = remoteWindow;
     this.json = true;
@@ -13,6 +14,9 @@ export default class Messenger {
     this.queue = [];
     this.idIncrement = 0;
     this.ee = new EventEmitter();
+    this.on = this.ee.on.bind(this.ee);
+    this.off = this.ee.off.bind(this.ee);
+
     window.addEventListener('message', this.onMessage, false);
   }
 
@@ -52,17 +56,15 @@ export default class Messenger {
     validMessage = false;
     if (this.json) {
       try {
-        message = JSON.parse(e.data);
-        if ($.isPlainObject(message)) {
-          validMessage = true;
-        }
+        message = JSON.parse(e.data)
+        validMessage = true
       } catch (_error) {
         e = _error;
-        message = e.data;
+        message = e.data
       }
     } else {
       validMessage = true;
-      message = e.data;
+      message = e.data
     }
     if (!validMessage) {
       this.log("Invalid message received");
@@ -73,7 +75,7 @@ export default class Messenger {
       this.log("Received message from " + e.origin);
       this.log(message);
     }
-    if ($.isPlainObject(message) && message.response && message._callbackId) {
+    if (message.response && message._callbackId) {
       if (this.callbacks[message._callbackId]) {
         this.callbacks[message._callbackId](message.response);
         delete this.callbacks[message._callbackId];
@@ -83,7 +85,7 @@ export default class Messenger {
         delete this.deferreds[message._callbackId];
       }
     }
-    return $(this).trigger('message', message);
+    return this.ee.trigger('message', [message]);
   }
 
   log(message) {
