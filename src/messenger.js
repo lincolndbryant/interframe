@@ -1,18 +1,20 @@
 import EventEmitter from 'wolfy87-eventemitter'
-import promiseAdaptor from './promise-adaptors/native.js'
+import assign from 'object-assign'
+import DEFAULTS from './options'
+import promiseAdaptor from './promise-adaptors/native'
 
 export default class Messenger {
 
-  constructor(remoteDomain, remoteWindow) {
-    this.remoteDomain = remoteDomain;
+  constructor(remoteWindow, options={}) {
     this.remoteWindow = remoteWindow;
-    this.json = true;
+    this.options = assign({}, DEFAULTS, options);
     this.adaptor = promiseAdaptor;
-    this.onMessage = this.onMessage.bind(this);
+
     this.callbacks = {};
     this.deferreds = {};
     this.queue = [];
     this.idIncrement = 0;
+    this.onMessage = this.onMessage.bind(this);
 
     this.ee = new EventEmitter();
     this.on = this.ee.on.bind(this.ee);
@@ -21,8 +23,7 @@ export default class Messenger {
   }
 
   postMessage(message, callback) {
-    var deferred;
-    deferred = this.adaptor.defer();
+    let deferred = this.adaptor.defer();
     if (message.response && message._callbackId) {
       message.response._end = +new Date();
       message.response._start = message._start;
@@ -44,28 +45,22 @@ export default class Messenger {
   }
 
   _send(message) {
-    var serialized;
-    serialized = this.json ? JSON.stringify(message) : message;
-    this.log('Posting message to ' + this.remoteDomain);
-    this.log(message);
-    return this.remoteWindow.postMessage(serialized, this.remoteDomain);
+    this.log('Posting message to ' + this.options.origin, message);
+    let serialized = this.options.serialize(message);
+    return this.remoteWindow.postMessage(serialized, this.options.origin);
   }
 
   onMessage(e) {
-    var message, validMessage;
-    validMessage = false;
-    if (this.json) {
-      try {
-        message = JSON.parse(e.data)
-        validMessage = true
-      } catch (_error) {
-        e = _error;
-        message = e.data
-      }
-    } else {
-      validMessage = true;
+    let validMessage = false,
+      message;
+    try {
+      message = this.options.deserialize(e.data)
+      validMessage = true
+    } catch (_error) {
+      e = _error;
       message = e.data
     }
+
     if (!validMessage) {
       this.log("Invalid message received");
       this.log(message);
@@ -88,9 +83,9 @@ export default class Messenger {
     return this.ee.trigger('message', [message]);
   }
 
-  log(message) {
+  log(...message) {
     if ((typeof localStorage !== "undefined" && localStorage !== null ? localStorage.getItem('INTERFRAME_DEBUG') : void 0) && (window.console != null) && (window.console.log != null)) {
-      return console.log(message);
+      return console.log(...message);
     }
   }
 

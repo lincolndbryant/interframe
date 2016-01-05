@@ -1,6 +1,6 @@
 (function() {
   var iframe = document.getElementsByTagName('iframe')[0];
-  var messenger = new Interframe(document.origin, iframe.contentWindow);
+  var messenger = new Interframe(iframe.contentWindow);
   iframe.addEventListener('load', onIframeLoad);
 
   function onIframeLoad() {

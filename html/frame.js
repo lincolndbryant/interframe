@@ -1,5 +1,5 @@
 (function() {
-  var messenger = new Interframe(document.origin, window.parent);
+  var messenger = new Interframe(window.parent);
 
   messenger.on('message', function (message) {
     message.response = {
